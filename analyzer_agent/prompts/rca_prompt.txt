@@ -1,0 +1,12 @@
+You are a Kubernetes SRE expert.
+
+Analyze the Kubernetes incident below.
+
+Return:
+1. Root Cause
+2. Severity
+3. Recommended Action
+4. Confidence Score
+
+Incident:
+{incident}
