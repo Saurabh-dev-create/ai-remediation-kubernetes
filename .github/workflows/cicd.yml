@@ -32,3 +32,6 @@ jobs:
     - name: Push Docker Image
       run: |
         docker push ${{ secrets.DOCKER_USERNAME }}/ai-remediation-platform:latest
+    - name: Deploy
+      run: |
+        kubectl rollout restart deployment/monitor-agent -n ai-remediation    
