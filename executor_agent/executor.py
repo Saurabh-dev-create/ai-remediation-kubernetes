@@ -7,7 +7,13 @@ def restart_deployment(deployment_name, namespace="ai-remediation"):
     """
 
     # Load kubeconfig
-    config.load_kube_config()
+    try:
+      config.load_incluster_config()
+      print("✅ Executor running inside Kubernetes")
+
+    except Exception:
+      config.load_kube_config()
+      print("✅ Executor running locally")
 
     # Apps API client
     apps_v1 = client.AppsV1Api()

@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: monitor-agent
+  namespace: ai-remediation
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: monitor-agent
+
+  template:
+    metadata:
+      labels:
+        app: monitor-agent
+
+    spec:
+      serviceAccountName: default
+
+      containers:
+      - name: monitor-agent
+
+        image: ai-remediation-platform:v1
+
+        imagePullPolicy: Never
+
+        ports:
+        - containerPort: 8000
+
+        env:
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: ai-remediation-secrets
+              key: OPENAI_API_KEY
+
+        - name: SLACK_WEBHOOK_URL
+          valueFrom:
+            secretKeyRef:
+              name: ai-remediation-secrets
+              key: SLACK_WEBHOOK_URL "

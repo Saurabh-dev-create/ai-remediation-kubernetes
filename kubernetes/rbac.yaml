@@ -1,0 +1,44 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+
+metadata:
+  name: monitor-agent-role
+  namespace: ai-remediation
+
+rules:
+- apiGroups: [""]
+  resources:
+    - pods
+    - pods/log
+
+  verbs:
+    - get
+    - list
+    - watch
+
+- apiGroups: ["apps"]
+  resources:
+    - deployments
+  verbs:
+    - get
+    - list
+    - watch
+    - patch
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+
+metadata:
+  name: monitor-agent-rolebinding
+  namespace: ai-remediation
+
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: ai-remediation
+
+roleRef:
+  kind: Role
+  name: monitor-agent-role
+  apiGroup: rbac.authorization.k8s.io

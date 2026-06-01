@@ -1,4 +1,11 @@
+import os
+
+from dotenv import load_dotenv
+
 from analyzer_agent.providers.ollama_provider import OllamaProvider
+from analyzer_agent.providers.openai_provider import OpenAIProvider
+
+load_dotenv()
 
 
 def analyze_incident(incident_data):
@@ -12,7 +19,16 @@ def analyze_incident(incident_data):
     )
 
     # Initialize provider
-    provider = OllamaProvider()
+    # provider = OllamaProvider()
+    provider_name = os.getenv(
+    "LLM_PROVIDER",
+    "ollama"
+)
+
+    if provider_name == "openai":
+      provider = OpenAIProvider()
+    else:
+      provider = OllamaProvider()
 
     # Return AI analysis
     return provider.analyze(final_prompt)

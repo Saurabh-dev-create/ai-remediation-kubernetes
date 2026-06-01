@@ -2,10 +2,24 @@ from analyzer_agent.analyzer import analyze_incident
 from executor_agent.executor import restart_deployment
 from notifier_agent.slack_notifier import send_slack_notification
 from kubernetes import client, config, watch
+from auditor_agent.auditor import log_incident
 from kubernetes.client.rest import ApiException
+from monitor_agent.metrics import (
+    INCIDENTS_TOTAL,
+    REMEDIATIONS_TOTAL,
+    REMEDIATION_FAILURES_TOTAL,
+    NOTIFICATIONS_TOTAL,
+    start_metrics_server
+)
 
 # Load Kubernetes config
-config.load_kube_config()
+try:
+    config.load_incluster_config()
+    print("✅ Running inside Kubernetes")
+
+except Exception:
+    config.load_kube_config()
+    print("✅ Running locally")
 
 # Core API
 v1 = client.CoreV1Api()
@@ -14,7 +28,7 @@ v1 = client.CoreV1Api()
 w = watch.Watch()
 
 print("🚀 Monitoring Kubernetes Pods...\n")
-
+start_metrics_server()
 detected_pods = set()
 try:
     for event in w.stream(v1.list_namespaced_pod,
@@ -44,6 +58,7 @@ try:
                         
                         detected_pods.add(pod_name)
                         print("\n🚨 INCIDENT DETECTED 🚨")
+                        INCIDENTS_TOTAL.inc()
                         print(f"Pod: {pod_name}")
                         print(f"Reason: {reason}")
 
@@ -68,7 +83,8 @@ try:
                         print("\n🧠 Sending incident to AI Analyzer...\n")
                         
                         # Stop event stream while AI analyzes
-                        w.stop()
+                        # w.stop()
+                        analysis_in_progress = False
                         # Run AI analysis
                         analysis = analyze_incident(incident_data)
 
@@ -76,9 +92,20 @@ try:
                         print(analysis)
                         print("\n Executing remediation action...\n")
 
-                        restart_deployment("broken-app")
+                        try:
 
-                        print("\n✅ Auto-remediation completed successfully.")
+                          restart_deployment("broken-app")
+
+                          REMEDIATIONS_TOTAL.inc()
+                          print("\n✅ Auto-remediation completed successfully.")
+
+                        except Exception as e: 
+
+                          REMEDIATION_FAILURES_TOTAL.inc()
+
+                          print(f"❌ Remediation failed: {e}")
+
+
                         slack_message = f"""
                         Kubernetes Auto-Remediation Alert
 
@@ -98,5 +125,17 @@ try:
                         print("\n Sending Slack notification...\n")
 
                         send_slack_notification(slack_message)
-except ApiException as e:
-    print(f"\n Kubernetes API Error: {e}")
+                        NOTIFICATIONS_TOTAL.inc()
+                        # Audit log
+                        log_incident(
+                            pod_name=pod_name,
+                            reason=reason,
+                            root_cause=analysis,
+                            action="restart_deployment",
+                            status="success"
+                        )
+except KeyboardInterrupt:
+    print("\n🛑 Monitoring stopped by user.")
+
+except Exception as e:
+    print(f"\n❌ Unexpected Error: {e}")
