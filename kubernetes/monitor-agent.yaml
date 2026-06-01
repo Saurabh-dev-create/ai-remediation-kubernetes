@@ -23,9 +23,9 @@ spec:
       containers:
       - name: monitor-agent
 
-        image: ai-remediation-platform:v1
+        image: dockerwithsaurbh/ai-remediation-platform:v1
 
-        imagePullPolicy: Never
+        imagePullPolicy: Always
 
         ports:
         - containerPort: 8000
