@@ -16,3 +16,12 @@ venv/
 # Secrets
 # =========================
 .env
+# =========================
+# Terraform
+# =========================
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+.terraform.lock.hcl

@@ -23,7 +23,7 @@ spec:
       containers:
       - name: monitor-agent
 
-        image: dockerwithsaurbh/ai-remediation-platform:v1
+        image: dockerwithsaurabh/ai-remediation-platform:v1
 
         imagePullPolicy: Always
 
@@ -41,4 +41,6 @@ spec:
           valueFrom:
             secretKeyRef:
               name: ai-remediation-secrets
-              key: SLACK_WEBHOOK_URL "
+              key: SLACK_WEBHOOK_URL
+        - name: LLM_PROVIDER
+          value: "openai"

@@ -1,0 +1,36 @@
+resource "kubernetes_manifest" "monitor_agent_servicemonitor" {
+
+  manifest = {
+    apiVersion = "monitoring.coreos.com/v1"
+    kind       = "ServiceMonitor"
+
+    metadata = {
+      name      = "monitor-agent"
+      namespace = "default"
+
+      labels = {
+        release = "monitoring"
+      }
+    }
+
+    spec = {
+      selector = {
+        matchLabels = {
+          app = "monitor-agent"
+        }
+      }
+
+      namespaceSelector = {
+        matchNames = ["ai-remediation"]
+      }
+
+      endpoints = [
+        {
+          port     = "metrics"
+          interval = "15s"
+          path     = "/metrics"
+        }
+      ]
+    }
+  }
+}

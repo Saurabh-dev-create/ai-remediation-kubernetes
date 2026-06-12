@@ -6,32 +6,57 @@ on:
       - main
 
 jobs:
-
-  build-and-push:
+  build-and-deploy:
 
     runs-on: ubuntu-latest
 
     steps:
 
-    - name: Checkout Code
-      uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-    - name: Login to Docker Hub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Configure EKS Access
+        run: |
+          aws eks update-kubeconfig \
+            --region ap-south-1 \
+            --name ai-remediation-eks
 
-    - name: Build Docker Image
-      run: |
-        docker build -t ${{ secrets.DOCKER_USERNAME }}/ai-remediation-platform:latest .
+      - name: Verify Cluster Access
+        run: |
+          kubectl get nodes
 
-    - name: Push Docker Image
-      run: |
-        docker push ${{ secrets.DOCKER_USERNAME }}/ai-remediation-platform:latest
-    - name: Deploy
-      run: |
-        kubectl rollout restart deployment/monitor-agent -n ai-remediation    
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Docker Image
+        run: |
+          docker build -t dockerwithsaurabh/ai-remediation-platform:v1 .
+
+      - name: Push Docker Image
+        run: |
+          docker push dockerwithsaurabh/ai-remediation-platform:v1
+
+      - name: Apply Kubernetes Manifests
+        run: |
+          kubectl apply -f kubernetes/
+
+      - name: Restart Monitor Agent
+        run: |
+          kubectl rollout restart deployment/monitor-agent -n ai-remediation
+
+      - name: Verify Rollout
+        run: |
+          kubectl rollout status deployment/monitor-agent -n ai-remediation --timeout=300s    
