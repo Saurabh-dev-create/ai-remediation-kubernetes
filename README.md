@@ -4,6 +4,19 @@ AI-powered Kubernetes auto-remediation platform that detects pod failures, perfo
 
 Built using Python, Kubernetes, Amazon EKS, Terraform, GitHub Actions, OpenAI, Prometheus, and Grafana. 
 
+The primary goal of this project is to demonstrate a `End-toEnd AIOps lifecycle`.
+
+To keep the workflow focused and verifiable, the platform was validated against CrashLoopBackOff and OOMKilled incidents. These scenarios provide sufficient coverage to demonstrate:
+
+- Incident detection
+- Context collection
+- AI-assisted root cause analysis
+- Automated remediation
+- Notification workflows
+- Observability and auditing
+
+The architecture is extensible and can be expanded to support additional failure categories such as ImagePullBackOff, node failures, networking issues, and resource exhaustion events.
+
 ## Architecture Overview
 
 The AI-Powered Kubernetes Auto-Remediation Platform continuously monitors Kubernetes workloads running on Amazon EKS and automatically responds to application failures.
@@ -11,8 +24,6 @@ The AI-Powered Kubernetes Auto-Remediation Platform continuously monitors Kubern
 The project was initially developed on a local Kind cluster and later migrated to Amazon EKS to demonstrate production-grade deployment patterns.
 
 During early development, Ollama was used as the AI provider. The final implementation uses OpenAI for automated root cause analysis.
-
-I have taken intentional decision to show pod failures using few incidents like `crashloopbackoff` and `oom killed` because my focus was to demonstrate End-to-End AIOps workflow. This same code can be used with other container failure types.
 
 When a pod enters a failed state such as `CrashLoopBackOff`, `oom-killed`the monitor-agent collects pod status information, application logs, and Kubernetes events. The incident data is then sent to OpenAI for root cause analysis.
 
