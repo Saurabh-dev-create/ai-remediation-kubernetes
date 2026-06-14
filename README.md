@@ -30,3 +30,15 @@ The Kubernetes cluster and networking infrastructure are provisioned using Terra
 (docs/screenshots/01-eks-cluster/Screenshot(207).png)
 
 *Kubernetes worker node successfully joined the EKS control plane.*
+
+### Core Kubernetes Components
+
+![System Pods](docs/screenshots/01-eks-cluster/eks-system-pods.png)
+
+*Core EKS system components including CoreDNS, kube-proxy, and VPC CNI running successfully.*
+
+### Cluster Health Verification
+
+![Cluster Status](docs/screenshots/01-eks-cluster/eks-cluster-status-cli.png)
+
+*AWS CLI validation confirming the EKS cluster is in ACTIVE state.*
